@@ -1,0 +1,60 @@
+{
+    "name": "rollup-userscript-template",
+    "version": "1.2.2",
+    "description": "Bundle typescript, react and JSX/TSX script files into a single userscript file with rollup",
+    "keywords": [
+        "userscript",
+        "greasemonkey",
+        "tampermonkey",
+        "rollup",
+        "typescript",
+        "react"
+    ],
+    "homepage": "https://github.com/cvzi/rollup-userscript-template",
+    "funding": "https://github.com/cvzi/rollup-userscript-template/funding_links?fragment=1",
+    "repository": {
+        "type": "git",
+        "url": "github:cvzi/rollup-userscript-template"
+    },
+    "bugs": {
+        "url": "https://github.com/cvzi/rollup-userscript-template/issues",
+        "email": "cuzi@openmail.cc"
+    },
+    "author": "cuzi",
+    "license": "MIT",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "build": "npx rollup --config rollup.config.js",
+        "watch": "npx rollup --config rollup.config.js --watch",
+        "serve": "node -r esm server.js",
+        "start": "node -r esm server.js",
+        "build:release": "npx rollup --config rollup.config.js --sourcemap 0 --file dist/release-$npm_package_version.user.js",
+        "build:release:win32": "npx rollup --config rollup.config.js --sourcemap 0 --file dist\\release-%npm_package_version%.user.js",
+        "version": "npm run build:release && git add dist/release-$npm_package_version.user.js",
+        "prepublishOnly": "npm run build:release && git add dist/release-$npm_package_version.user.js"
+    },
+    "devDependencies": {
+        "@babel/cli": "^7.17.6",
+        "@babel/core": "^7.17.8",
+        "@babel/plugin-proposal-class-properties": "^7.16.7",
+        "@babel/preset-react": "^7.16.7",
+        "@rollup/plugin-babel": "^5.3.1",
+        "@rollup/plugin-commonjs": "^21.0.3",
+        "@rollup/plugin-node-resolve": "^13.1.3",
+        "@rollup/plugin-replace": "^4.0.0",
+        "@rollup/plugin-typescript": "^8.3.1",
+        "@types/react": "^17.0.43",
+        "colorette": "^2.0.16",
+        "esm": "^3.2.25",
+        "react": "^18.0.0",
+        "react-dom": "^18.0.0",
+        "rollup": "^2.70.1",
+        "rollup-plugin-userscript-metablock": "^0.3.1",
+        "serve": "^13.0.2",
+        "tslib": "^2.3.1",
+        "typescript": "^4.6.3"
+    },
+    "config": {
+        "port": "8124"
+    }
+}
