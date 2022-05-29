@@ -2,7 +2,14 @@
 
 Download GPX and KML files for a route on bikemap.net
 
-This is a first version with a very limited range of functions
+**This is a first version with a very limited range of functions**
+
+This program is a userscript for your browser. It's primarily designed for Firefox and Chrome with
+[Tampermonkey](https://www.tampermonkey.net/) or similar userscript addons.
+General information about userscripts and how to use them can be found at [openuserjs.org/about/Userscript-Beginners-HOWTO](https://openuserjs.org/about/Userscript-Beginners-HOWTO).
+
+If you already have a userscript extension installed, you can **[click to install](https://greasyfork.org/scripts/445713-bikemap-net-export-gpx-and-kml-routes/code/Bikemapnet%20Export%20GPX%20and%20KML%20routes.user.js)** this script.
+
 
 Screenshot:
 ![Screenshot export route](screenshots/exportFormat.png)
