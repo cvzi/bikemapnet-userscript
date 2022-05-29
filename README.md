@@ -5,7 +5,7 @@ Download GPX and KML files for a route on bikemap.net
 This is a first version with a very limited range of functions
 
 Screenshot:
-![Screenshot export route](https://raw.githubusercontent.com/cvzi/bikemapnet-userscript/master/screenshots/exportFormat.png)
+![Screenshot export route](screenshots/exportFormat.png)
 
 ## Development
 
