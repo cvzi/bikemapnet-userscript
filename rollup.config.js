@@ -2,8 +2,6 @@ import babel from '@rollup/plugin-babel'
 import commonjs from '@rollup/plugin-commonjs'
 import nodeResolve from '@rollup/plugin-node-resolve'
 import replace from '@rollup/plugin-replace'
-import typescriptPlugin from '@rollup/plugin-typescript'
-import typescript from 'typescript'
 import metablock from 'rollup-plugin-userscript-metablock'
 
 const fs = require('fs')
@@ -30,8 +28,7 @@ export default {
       ENVIRONMENT: JSON.stringify('production'),
       preventAssignment: true
     }),
-    nodeResolve({ extensions: ['.js', '.ts', '.tsx'] }),
-    typescriptPlugin({ typescript }),
+    nodeResolve({ extensions: ['.js'] }),
     commonjs({
       include: [
         'node_modules/**'
@@ -52,6 +49,5 @@ export default {
         license: pkg.license
       }
     })
-  ],
-  external: id => /^react(-dom)?$/.test(id)
+  ]
 }

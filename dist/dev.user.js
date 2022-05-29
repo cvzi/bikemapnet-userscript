@@ -1,17 +1,16 @@
 // ==UserScript==
-// @name        rollup-userscript-template [dev]
-// @description Bundle typescript, react and JSX/TSX script files into a single userscript file with rollup
+// @name        Bikemap.net Export GPX and KML routes [dev]
+// @description Download GPX and KML files for a route on bikemap.net
 // @namespace   github.com/cvzi
-// @require     https://unpkg.com/react@17/umd/react.development.js
-// @require     https://unpkg.com/react-dom@17/umd/react-dom.development.js
-// @include     https://github.com/*
-// @version     1.2.2
-// @homepage    https://github.com/cvzi/rollup-userscript-template
+// @match       https://www.bikemap.net/*
+// @version     0.0.1
+// @homepage    https://github.com/cvzi/bikemapnet-userscript
 // @author      cuzi
 // @license     MIT
-// @grant       GM.getValue
 // @grant       GM.xmlHttpRequest
+// @grant       GM_setClipboard
 // @grant       GM.setValue
+// @grant       GM.getValue
 // ==/UserScript==
 /*  globals GM */
 
