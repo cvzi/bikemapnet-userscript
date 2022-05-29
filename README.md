@@ -1,27 +1,20 @@
-# rollup-userscript-template
+# Bikemap.net Export GPX and KML routes
 
-This is a template repository for a userscript.
-It bundles typescript, react and JSX/TSX script files into a single userscript file with [rollup](https://rollupjs.org/)
+Download GPX and KML files for a route on bikemap.net
 
-## Features:
-*   Bundle everything into a single userscript files in [dist/bundle.user.js](dist/bundle.user.js)
-*   Typescript support
-*   React support
-*   JSX/TSX support
-*   Metablock generation from [package.json](package.json) and [meta.json](meta.json) with [rollup-plugin-userscript-metablock](https://github.com/FlandreDaisuki/rollup-plugin-userscript-metablock)
-*   Development script in [dist/dev.user.js](dist/dev.user.js). Automatically fetches the newest version on F5
-*   Source map support
+This is a first version with a very limited range of functions
 
-## Installation
+Screenshot:
+![Screenshot export route](https://raw.githubusercontent.com/cvzi/bikemapnet-userscript/master/screenshots/exportFormat.png)
+
+## Development
 
 Clone the repository and install dependencies with npm
 ```sh
-git clone git@github.com:cvzi/rollup-userscript-template.git
-cd rollup-userscript-template
+git clone git@github.com:cvzi/bikemapnet-userscript.git
+cd bikemapnet-userscript
 npm install
 ```
-
-## Usage
 
 ### Bundle
 
@@ -56,8 +49,3 @@ or on Windows
 
 `npm run build:release:win32`
 
-
-## Other
-
-*   Typescript types for GM.* object are incomplete. See [types/GM/index.d.ts](types/GM/index.d.ts)
-*   Currently react is not bundled, but imported with @require. To bundle it, remove `output.globals` and `external` from [rollup.config.js](rollup.config.js)
