@@ -2,8 +2,11 @@
 // @name        Bikemap.net Export GPX and KML routes [dev]
 // @description Download GPX and KML files for a route on bikemap.net
 // @namespace   github.com/cvzi
+// @icon        https://static.bikemap.net/favicons/apple-touch-icon.png
 // @match       https://www.bikemap.net/*
-// @version     0.0.1
+// @connect     maptoolkit.net
+// @connect     localhost
+// @version     0.0.2
 // @homepage    https://github.com/cvzi/bikemapnet-userscript
 // @author      cuzi
 // @license     MIT
@@ -17,7 +20,7 @@
 'use strict';
 
 (function () {
-  const url = `http://localhost:8124/bundle.user.js?${Date.now()}`
+  const url = `http://localhost:8186/bundle.user.js?${Date.now()}`
   new Promise(function loadBundleFromServer (resolve, reject) {
     const req = GM.xmlHttpRequest({
       method: 'GET',

@@ -1,6 +1,6 @@
 {
     "name": "Bikemap.net Export GPX and KML routes",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "description": "Download GPX and KML files for a route on bikemap.net",
     "keywords": [
         "userscript",
@@ -48,6 +48,6 @@
         "serve": "^13.0.2"
     },
     "config": {
-        "port": "8124"
+        "port": "8186"
     }
 }

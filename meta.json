@@ -1,11 +1,15 @@
 {
     "namespace": "github.com/cvzi",
     "copyright": "2022, cuzi (https://openuserjs.org/users/cuzi)",
+    "icon": "https://static.bikemap.net/favicons/apple-touch-icon.png",
     "match": [
         "https://www.bikemap.net/*"
     ],
     "grant": [
         "GM.xmlHttpRequest",
         "GM_setClipboard"
+    ],
+    "connect": [
+        "maptoolkit.net"
     ]
 }

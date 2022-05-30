@@ -1,3 +1,5 @@
+/* globals GM, GM_setClipboard, sessionStorage, Blob */
+
 console.log('index.js')
 
 document.head.appendChild(document.createElement('style')).innerHTML = `
@@ -115,12 +117,17 @@ function downloadRoute (format) {
   support.setAttribute('href', 'https://github.com/cvzi/bikemapnet-userscript/issues')
   support.appendChild(document.createTextNode('https://github.com/cvzi/bikemapnet-userscript/issues'))
 
+  addCloseButton(div)
+}
+
+function addCloseButton (div) {
   const close = div.appendChild(document.createElement('span'))
   close.classList.add('close-button')
   close.appendChild(document.createTextNode('❌'))
   close.addEventListener('click', function () {
     this.parentNode.remove()
   })
+  return close
 }
 
 function startDownload (progress) {
@@ -198,6 +205,27 @@ function downloadElevation (routeData, progress, index) {
 }
 
 function exportRoute (routeData, progress) {
+  // Find min/max elevation
+  routeData.minElevation = Number.MAX_SAFE_INTEGER
+  routeData.maxElevation = Number.MIN_SAFE_INTEGER
+  routeData.minElevationPoint = null
+  routeData.maxElevationPoint = null
+  if (routeData.vertices[0].length > 2) {
+    routeData.vertices.forEach(function (p) {
+      if (p[0] < routeData.minElevation) {
+        routeData.minElevation = p[0]
+        routeData.minElevationPoint = [p[1], p[2]]
+      }
+      if (p[0] > routeData.maxElevation) {
+        routeData.maxElevation = p[0]
+        routeData.maxElevationPoint = [p[1], p[2]]
+      }
+    })
+  } else {
+    routeData.minElevation = Math.min(...routeData.elevation)
+    routeData.maxElevation = Math.max(...routeData.elevation)
+  }
+
   if (routeData.format === 'gpx') {
     toGPX(routeData, progress)
   } else {
@@ -213,7 +241,10 @@ function toKML (routeData, progress) {
 <kml xmlns="http://www.opengis.net/kml/2.2">
   <Document>
     <name>${routeData.routeName}</name>
-    <description${routeData.routeDesc}</description>
+    <description${routeData.routeDesc}
+    https://www.bikemap.net/en/r/${routeData.routeId}/
+${metablock(routeData)}
+    </description>
     <Style id="yellowLineGreenPoly">
       <LineStyle>
         <color>7f00ffff</color>
@@ -238,8 +269,8 @@ function toKML (routeData, progress) {
   </Document>
 </kml>
 `
-  GM_setClipboard(temp)
-  downloadFile('out.kml', temp, 'application/vnd.google-earth.kml+xml', progress)
+  // GM_setClipboard(temp)
+  downloadFile(routeData, fileName(routeData.routeName + '_' + routeData.routeId, 'kml'), temp, 'application/vnd.google-earth.kml+xml', progress)
 }
 
 function toGPX (routeData, progress) {
@@ -262,6 +293,9 @@ function toGPX (routeData, progress) {
       <link href="https://www.bikemap.net/en/r/${routeData.routeId}/">
         <text>${routeData.routeDesc}</text>
       </link>
+      <desc>
+      ${metablock(routeData)}
+      </desc>
       <time>${new Date().toISOString()}</time>
     </metadata>
     <rte>
@@ -269,25 +303,64 @@ function toGPX (routeData, progress) {
 ${rtepts}
     </rte>
   </gpx>
-  
-  
 `
   GM_setClipboard(temp)
-  downloadFile('out.gpx', temp, 'application/gpx+xml', progress)
+  downloadFile(routeData, fileName(routeData.routeName + '_' + routeData.routeId, 'gpx'), temp, 'application/gpx+xml', progress)
 }
 
-function downloadFile (name, content, mimeType, progress) {
+function metablock (routeData) {
+  let minElevationRepr = '' + elevationFormat(routeData.minElevation)
+  if (routeData.minElevationPoint) {
+    minElevationRepr += ' (at ' + routeData.minElevationPoint.join(', ') + ')'
+  }
+  let maxElevationRepr = '' + elevationFormat(routeData.maxElevation)
+  if (routeData.maxElevationPoint) {
+    maxElevationRepr += ' (at ' + routeData.maxElevationPoint.join(', ') + ')'
+  }
+
+  return `
+    Distance: ${distanceFormat(routeData.distance)}
+
+    Race cycling time: ${hoursMinutes(routeData.race_cycling_time)}
+    Offroad cycling time: ${hoursMinutes(routeData.offroad_cycling_time)}
+    Cycling time: ${hoursMinutes(routeData.cycling_time)}
+    Walking time: ${hoursMinutes(routeData.walking_time)}
+
+    Ascent: ${elevationFormat(routeData.ascend)}
+    Descend: ${elevationFormat(routeData.descend)}
+
+    Min. elevation: ${minElevationRepr}
+    Max. elevation: ${maxElevationRepr}
+  `
+}
+
+function downloadFile (routeData, name, content, mimeType, progress) {
   const div = progress.parentNode
-  div.innerHTML = ''
+  div.innerHTML = '<br>'
+
   const a = div.appendChild(document.createElement('a'))
   a.download = name
   a.href = window.URL.createObjectURL(new Blob([content], { type: mimeType || 'text/plain' }))
   a.appendChild(document.createTextNode('Download'))
   a.click()
+
+  div.appendChild(document.createElement('br'))
+
+  const info = div.appendChild(document.createElement('pre'))
+  info.style.textAlign = 'left'
+  info.innerHTML = metablock(routeData)
+
+  addCloseButton(div)
+}
+
+function fileName (title, ext) {
+  let name = title.replace(/[:*?<>/\\,|\u0000]/g, '') // eslint-disable-line no-control-regex
+  name = name.trim().replace(/^\.+/, '').replace(/\.+$/, '').trim()
+  return name + '.' + ext
 }
 
 function cachedRequest (obj) {
-  if ('data' in obj || obj.method != 'GET') {
+  if ('data' in obj || obj.method !== 'GET') {
     return GM.xmlHttpRequest(obj)
   }
   const cached = sessionStorage.getItem(obj.url)
@@ -295,7 +368,7 @@ function cachedRequest (obj) {
     window.setTimeout(function () {
       const result = JSON.parse(cached)
       obj.onload(result)
-    }, 5)
+    }, 1)
   } else {
     const orgOnload = obj.onload
     obj.onload = function (response) {
@@ -312,5 +385,39 @@ function cachedRequest (obj) {
       orgOnload.apply(this, [response])
     }
     GM.xmlHttpRequest(obj)
+  }
+}
+
+function hoursMinutes (minutes) {
+  const hours = parseInt(minutes / 60)
+  minutes = parseInt(minutes % 60)
+  minutes = (minutes < 10 ? '0' : '') + minutes
+  return `${hours ? hours + ':' : ''}${minutes} h`
+}
+
+function distanceFormat (meters) {
+  if (navigator.language.indexOf('US') !== -1) { // TODO detect from current display if miles or meters
+    const miles = 0.000621371192237334 * meters
+    const mileFormat = new Intl.NumberFormat(navigator.language, { style: 'unit', unit: 'mile', unitDisplay: 'short' })
+    return mileFormat.format(parseInt(miles * 100) / 100)
+  } else {
+    if (meters < 3000) {
+      const meterFormat = new Intl.NumberFormat(navigator.language, { style: 'unit', unit: 'meter', unitDisplay: 'narrow' })
+      return meterFormat.format(parseInt(meters))
+    } else {
+      const kilometerFormat = new Intl.NumberFormat(navigator.language, { style: 'unit', unit: 'kilometer', unitDisplay: 'narrow' })
+      return kilometerFormat.format(parseInt(meters / 100) / 10)
+    }
+  }
+}
+
+function elevationFormat (meters) {
+  if (navigator.language.indexOf('US') !== -1) { // TODO detect from current display if feet or meters
+    const feet = 3.280839895 * meters
+    const footFormat = new Intl.NumberFormat(navigator.language, { style: 'unit', unit: 'foot', unitDisplay: 'short' })
+    return footFormat.format(parseInt(feet * 100) / 100)
+  } else {
+    const meterFormat = new Intl.NumberFormat(navigator.language, { style: 'unit', unit: 'meter', unitDisplay: 'narrow' })
+    return meterFormat.format(parseInt(meters))
   }
 }
