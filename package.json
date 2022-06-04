@@ -1,14 +1,15 @@
 {
     "name": "Bikemap.net Export GPX and KML routes",
-    "version": "0.0.2",
-    "description": "Download GPX and KML files for a route on bikemap.net",
+    "version": "1.0.0",
+    "description": "Download GPX, KML and TCX files for a route on bikemap.net",
     "keywords": [
         "userscript",
         "greasemonkey",
         "tampermonkey",
         "bikemap",
         "gpx",
-        "kml"
+        "kml",
+        "tcx"
     ],
     "homepage": "https://github.com/cvzi/bikemapnet-userscript",
     "funding": "https://github.com/cvzi/bikemapnet-userscript/funding_links?fragment=1",
@@ -41,9 +42,9 @@
         "@rollup/plugin-commonjs": "^22.0.0",
         "@rollup/plugin-node-resolve": "^13.3.0",
         "@rollup/plugin-replace": "^4.0.0",
-        "colorette": "^2.0.16",
+        "colorette": "^2.0.17",
         "esm": "^3.2.25",
-        "rollup": "^2.75.3",
+        "rollup": "^2.75.5",
         "rollup-plugin-userscript-metablock": "^0.3.1",
         "serve": "^13.0.2"
     },

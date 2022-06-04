@@ -1,8 +1,6 @@
 # Bikemap.net Export GPX and KML routes
 
-Download GPX and KML files for a route on bikemap.net
-
-**This is a first version with a very limited range of functions**
+Download GPX, KML and TCX files for a route on bikemap.net
 
 This program is a userscript for your browser. It's primarily designed for Firefox and Chrome with
 [Tampermonkey](https://www.tampermonkey.net/) or similar userscript addons.

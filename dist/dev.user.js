@@ -1,17 +1,18 @@
 // ==UserScript==
 // @name        Bikemap.net Export GPX and KML routes [dev]
-// @description Download GPX and KML files for a route on bikemap.net
+// @description Download GPX, KML and TCX files for a route on bikemap.net
 // @namespace   github.com/cvzi
 // @icon        https://static.bikemap.net/favicons/apple-touch-icon.png
 // @match       https://www.bikemap.net/*
 // @connect     maptoolkit.net
 // @connect     localhost
-// @version     0.0.2
+// @version     1.0.0
 // @homepage    https://github.com/cvzi/bikemapnet-userscript
 // @author      cuzi
 // @license     MIT
 // @grant       GM.xmlHttpRequest
 // @grant       GM_setClipboard
+// @grant       GM.registerMenuCommand
 // @grant       GM.setValue
 // @grant       GM.getValue
 // ==/UserScript==
