@@ -1,7 +1,5 @@
 /* globals GM, GM_setClipboard, sessionStorage, Blob */
 
-console.log('index.js')
-
 document.head.appendChild(document.createElement('style')).innerHTML = `
 .btn-download {
   border:1px solid #1381fa;
@@ -56,6 +54,8 @@ if (document.location.href.match(/\/r\/(\d+)/)) {
 }
 
 function addDownloadButtons () {
+  GM.registerMenuCommand('Download route file', () => downloadRoute())
+
   const div = document.querySelector('.btn-group .actions').appendChild(document.createElement('div'))
 
   const downloadGPX = div.appendChild(document.createElement('button'))
@@ -91,7 +91,7 @@ function downloadRoute (format) {
   const input = div.appendChild(document.createElement('input'))
   input.setAttribute('id', 'export_format')
   input.value = format || 'gpx'
-  div.appendChild(document.createTextNode(' (kml or gpx)'))
+  div.appendChild(document.createTextNode(' (kml or gpx or tcx)'))
 
   div.appendChild(document.createElement('br'))
 
@@ -137,7 +137,7 @@ function startDownload (progress) {
   const routeDescriptionDiv = document.querySelector('.route-description')
   const desc = routeDescriptionDiv ? routeDescriptionDiv.textContent.trim() : ''
 
-  const format = document.getElementById('export_format').value.trim()
+  const format = document.getElementById('export_format').value.trim().toLowerCase()
   const addElevation = document.getElementById('export_add_elevation').checked
 
   downloadVertices(routeId, format, addElevation, name, desc, progress)
@@ -228,6 +228,8 @@ function exportRoute (routeData, progress) {
 
   if (routeData.format === 'gpx') {
     toGPX(routeData, progress)
+  } else if (routeData.format === 'tcx') {
+    toTCX(routeData, progress)
   } else {
     toKML(routeData, progress)
   }
@@ -240,10 +242,10 @@ function toKML (routeData, progress) {
   const temp = `<?xml version="1.0" encoding="UTF-8"?>
 <kml xmlns="http://www.opengis.net/kml/2.2">
   <Document>
-    <name>${routeData.routeName}</name>
-    <description${routeData.routeDesc}
-    https://www.bikemap.net/en/r/${routeData.routeId}/
-${metablock(routeData)}
+    <name>${escapeXML(routeData.routeName)}</name>
+    <description>${escapeXML(routeData.routeDesc)}
+    https://www.bikemap.net/en/r/${escapeXML(routeData.routeId)}/
+${escapeXML(metablock(routeData))}
     </description>
     <Style id="yellowLineGreenPoly">
       <LineStyle>
@@ -255,8 +257,8 @@ ${metablock(routeData)}
       </PolyStyle>
     </Style>
     <Placemark>
-      <name>${routeData.routeName}</name>
-      <description>${routeData.routeDesc}</description>
+      <name>${escapeXML(routeData.routeName)}</name>
+      <description>${escapeXML(routeData.routeDesc)}</description>
       <styleUrl>#yellowLineGreenPoly</styleUrl>
       <LineString>
         <extrude>1</extrude>
@@ -289,23 +291,99 @@ function toGPX (routeData, progress) {
   const temp = `<?xml version="1.0" encoding="UTF-8"?>
   <gpx xmlns="http://www.topografix.com/GPX/1/1" creator="https://bikemap.net and https://github.com/cvzi/bikemapnet-userscript" version="1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">
     <metadata>
-      <name>${routeData.routeName}</name>
-      <link href="https://www.bikemap.net/en/r/${routeData.routeId}/">
-        <text>${routeData.routeDesc}</text>
-      </link>
+      <name>${escapeXML(routeData.routeName)}</name>
       <desc>
-      ${metablock(routeData)}
+      ${escapeXML(metablock(routeData))}
       </desc>
-      <time>${new Date().toISOString()}</time>
+      <link href="https://www.bikemap.net/en/r/${escapeXML(routeData.routeId)}/">
+        <text>${escapeXML(routeData.routeDesc)}</text>
+      </link>
+      <time>${escapeXML(new Date().toISOString())}</time>
     </metadata>
     <rte>
-      <name>${routeData.routeName}</name>
+      <name>${escapeXML(routeData.routeName)}</name>
 ${rtepts}
     </rte>
   </gpx>
 `
   GM_setClipboard(temp)
   downloadFile(routeData, fileName(routeData.routeName + '_' + routeData.routeId, 'gpx'), temp, 'application/gpx+xml', progress)
+}
+
+function toTCX (routeData, progress) {
+  progress.value = 12
+
+  let beginPosition
+  if (routeData.vertices[0].length === 3) {
+    beginPosition = [routeData.vertices[0][1], routeData.vertices[0][2]]
+  } else {
+    beginPosition = routeData.vertices[0]
+  }
+
+  let endPosition
+  const lastInd = routeData.vertices.length - 1
+  if (routeData.vertices[lastInd].length === 3) {
+    endPosition = [routeData.vertices[lastInd][1], routeData.vertices[lastInd][2]]
+  } else {
+    endPosition = routeData.vertices[lastInd]
+  }
+
+  const trackPoints = routeData.vertices.map(p => {
+    let content
+    if (p.length === 3) {
+      content = `            <Position>
+              <LatitudeDegrees>${p[1]}</LatitudeDegrees>
+              <LongitudeDegrees>${p[2]}</LongitudeDegrees>
+            </Position>
+            <AltitudeMeters>${p[0]}</AltitudeMeters>`
+    } else {
+      content = `            <Position>
+              <LatitudeDegrees>${p[0]}</LatitudeDegrees>
+              <LongitudeDegrees>${p[1]}</LongitudeDegrees>
+            </Position>`
+    }
+    return `          <Trackpoint>
+${content}
+          </Trackpoint>`
+  }).join('\n')
+
+  const temp = `<?xml version="1.0" encoding="UTF-8"?>
+  <TrainingCenterDatabase xmlns="http://www.garmin.com/xmlschemas/TrainingCenterDatabase/v2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.garmin.com/xmlschemas/TrainingCenterDatabase/v2 http://www.garmin.com/xmlschemas/TrainingCenterDatabasev2.xsd">
+    <Folders>
+      <Courses>
+        <CourseFolder Name="Courses">
+          <CourseNameRef>
+            <Id>${escapeXML(routeData.routeName)}</Id>
+          </CourseNameRef>
+        </CourseFolder>
+      </Courses>
+    </Folders>
+    <Courses>
+      <Course>
+        <Name>${escapeXML(routeData.routeName)}</Name>
+        <Notes>
+        ${escapeXML(metablock(routeData))}
+        </Notes>
+        <Lap>
+          <DistanceMeters>${routeData.distance}</DistanceMeters>
+          <BeginPosition>
+            <LatitudeDegrees>${beginPosition[0]}</LatitudeDegrees>
+            <LongitudeDegrees>${beginPosition[1]}</LongitudeDegrees>
+          </BeginPosition>
+          <EndPosition>
+            <LatitudeDegrees>${endPosition[0]}</LatitudeDegrees>
+            <LongitudeDegrees>${endPosition[1]}</LongitudeDegrees>
+          </EndPosition>
+        </Lap>
+        <Track>
+${trackPoints}
+        </Track>
+      </Course>
+    </Courses>
+  </TrainingCenterDatabase>
+`
+  GM_setClipboard(temp)
+  downloadFile(routeData, fileName(routeData.routeName + '_' + routeData.routeId, 'tcx'), temp, 'application/vnd.garmin.tcx+xml', progress)
 }
 
 function metablock (routeData) {
@@ -396,7 +474,7 @@ function hoursMinutes (minutes) {
 }
 
 function distanceFormat (meters) {
-  if (navigator.language.indexOf('US') !== -1) { // TODO detect from current display if miles or meters
+  if (getSiteUnitFormat() === 'imperial') {
     const miles = 0.000621371192237334 * meters
     const mileFormat = new Intl.NumberFormat(navigator.language, { style: 'unit', unit: 'mile', unitDisplay: 'short' })
     return mileFormat.format(parseInt(miles * 100) / 100)
@@ -412,7 +490,7 @@ function distanceFormat (meters) {
 }
 
 function elevationFormat (meters) {
-  if (navigator.language.indexOf('US') !== -1) { // TODO detect from current display if feet or meters
+  if (getSiteUnitFormat() === 'imperial') {
     const feet = 3.280839895 * meters
     const footFormat = new Intl.NumberFormat(navigator.language, { style: 'unit', unit: 'foot', unitDisplay: 'short' })
     return footFormat.format(parseInt(feet * 100) / 100)
@@ -420,4 +498,21 @@ function elevationFormat (meters) {
     const meterFormat = new Intl.NumberFormat(navigator.language, { style: 'unit', unit: 'meter', unitDisplay: 'narrow' })
     return meterFormat.format(parseInt(meters))
   }
+}
+
+function getSiteUnitFormat () {
+  const input = document.querySelector('#site-settings-column input[name=unit]')
+  if (input && input.value === 'imperial') {
+    return 'imperial'
+  } else {
+    return 'metric'
+  }
+}
+
+function escapeXML (s) {
+  return s.toString().replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;')
 }
