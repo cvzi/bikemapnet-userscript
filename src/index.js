@@ -1,5 +1,7 @@
 /* globals GM, GM_setClipboard, sessionStorage, Blob */
 
+import Picker from 'vanilla-picker'
+
 document.head.appendChild(document.createElement('style')).innerHTML = `
 .btn-download {
   border:1px solid #1381fa;
@@ -21,7 +23,7 @@ document.head.appendChild(document.createElement('style')).innerHTML = `
   background-color:white;
 }
 
-.progress-holder {
+.main-popup-window {
   position: fixed;
   top: 20%;
   left: 20%;
@@ -33,19 +35,27 @@ document.head.appendChild(document.createElement('style')).innerHTML = `
   box-shadow: #b41aca4d 10px 10px 10px;
   text-align: center;
 }
-.progress-holder .close-button {
+.main-popup-window .close-button {
   position: absolute;
   top:1px;
   right:1px;
   cursor:pointer;
 }
-.progress-holder label {
+.main-popup-window label {
   display:inline;
 }
-.progress-holder input {
+.main-popup-window input {
   display:inline;
   width:50px;
 }
+
+.main-popup-window fieldset {
+  border: 1px #a204fb solid;
+  margin: 3px;
+  padding: 2px;
+  background: #f4ebff;
+}
+
 
 `
 
@@ -74,10 +84,10 @@ function addDownloadButtons () {
 }
 
 function downloadRoute (format) {
-  document.querySelectorAll('.progress-holder').forEach(e => e.remove())
+  document.querySelectorAll('.main-popup-window').forEach(e => e.remove())
 
   const div = document.body.appendChild(document.createElement('div'))
-  div.classList.add('progress-holder')
+  div.classList.add('main-popup-window')
   const progress = div.appendChild(document.createElement('progress'))
   progress.value = 0
   progress.max = 12
@@ -111,6 +121,47 @@ function downloadRoute (format) {
   div.appendChild(document.createElement('br'))
   div.appendChild(document.createElement('br'))
 
+  const fieldset = div.appendChild(document.createElement('fieldset'))
+  const legend = fieldset.appendChild(document.createElement('legend'))
+  legend.appendChild(document.createTextNode('KML options'))
+
+  const labelColor = fieldset.appendChild(document.createElement('label'))
+  labelColor.setAttribute('for', 'kml_line_color')
+  labelColor.appendChild(document.createTextNode('Line color:'))
+  const inputColor = fieldset.appendChild(document.createElement('input'))
+  inputColor.setAttribute('id', 'kml_line_color')
+  inputColor.setAttribute('readonly', '1')
+  inputColor.value = 'acf36708'
+  inputColor.style.width = '100px'
+  fieldset.appendChild(document.createTextNode(' '))
+  const colorChooserButton = fieldset.appendChild(document.createElement('button'))
+  colorChooserButton.style.backgroundColor = '#0867f3ac'
+  colorChooserButton.appendChild(document.createTextNode('Change'))
+  const picker = new Picker({
+    parent: colorChooserButton,
+    color: '#0867f3ac'
+  })
+  picker.onChange = function (color) {
+    colorChooserButton.style.background = color.rgbaString
+    const hex = color.hex.substring(1)
+    inputColor.value = hex.substring(6, 8) + hex.substring(4, 6) + hex.substring(2, 4) + hex.substring(0, 2)
+  }
+  fieldset.appendChild(document.createTextNode(' '))
+  const colorResetButton = fieldset.appendChild(document.createElement('button'))
+  colorResetButton.appendChild(document.createTextNode('Reset'))
+  colorResetButton.addEventListener('click', () => picker.setColor('#0867f3ac'))
+
+  fieldset.appendChild(document.createElement('br'))
+  fieldset.appendChild(document.createElement('br'))
+
+  const labelWidth = fieldset.appendChild(document.createElement('label'))
+  labelWidth.setAttribute('for', 'kml_line_width')
+  labelWidth.appendChild(document.createTextNode('Line width:'))
+  const inputWidth = fieldset.appendChild(document.createElement('input'))
+  inputWidth.setAttribute('id', 'kml_line_width')
+  inputWidth.value = '4'
+  inputWidth.style.width = '40px'
+
   div.appendChild(document.createTextNode('Report problem or suggest an improvement:'))
   div.appendChild(document.createElement('br'))
   const support = div.appendChild(document.createElement('a'))
@@ -139,11 +190,13 @@ function startDownload (progress) {
 
   const format = document.getElementById('export_format').value.trim().toLowerCase()
   const addElevation = document.getElementById('export_add_elevation').checked
+  const lineColor = document.getElementById('kml_line_color').value
+  const lineWidth = document.getElementById('kml_line_width').value
 
-  downloadVertices(routeId, format, addElevation, name, desc, progress)
+  downloadVertices(routeId, format, addElevation, lineColor, lineWidth, name, desc, progress)
 }
 
-function downloadVertices (routeId, format, addElevation, name, desc, progress) {
+function downloadVertices (routeId, format, addElevation, lineColor, lineWidth, name, desc, progress) {
   console.log('downloadVertices()')
   progress.style.visibility = 'visible'
   progress.value = 1
@@ -158,6 +211,8 @@ function downloadVertices (routeId, format, addElevation, name, desc, progress) 
       routeData.routeDesc = desc
       routeData.format = format
       routeData.addElevation = !!addElevation
+      routeData.lineColor = lineColor
+      routeData.lineWidth = lineWidth
       if (routeData.addElevation) {
         downloadElevation(routeData, progress, 0)
       } else {
@@ -238,6 +293,7 @@ function exportRoute (routeData, progress) {
 function toKML (routeData, progress) {
   progress.value = 12
   const coordinates = routeData.vertices.map(p => p.reverse().join(',')).join('\n')
+  // TODO set color
 
   const temp = `<?xml version="1.0" encoding="UTF-8"?>
 <kml xmlns="http://www.opengis.net/kml/2.2">
@@ -247,10 +303,10 @@ function toKML (routeData, progress) {
     https://www.bikemap.net/en/r/${escapeXML(routeData.routeId)}/
 ${escapeXML(metablock(routeData))}
     </description>
-    <Style id="yellowLineGreenPoly">
+    <Style id="myStyle">
       <LineStyle>
-        <color>7f00ffff</color>
-        <width>4</width>
+        <color>${routeData.lineColor}</color>
+        <width>${routeData.lineWidth}</width>
       </LineStyle>
       <PolyStyle>
         <color>7f00ff00</color>
@@ -259,7 +315,7 @@ ${escapeXML(metablock(routeData))}
     <Placemark>
       <name>${escapeXML(routeData.routeName)}</name>
       <description>${escapeXML(routeData.routeDesc)}</description>
-      <styleUrl>#yellowLineGreenPoly</styleUrl>
+      <styleUrl>#myStyle</styleUrl>
       <LineString>
         <extrude>1</extrude>
         <tessellate>1</tessellate>
