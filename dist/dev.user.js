@@ -6,7 +6,7 @@
 // @match       https://www.bikemap.net/*
 // @connect     maptoolkit.net
 // @connect     localhost
-// @version     1.0.0
+// @version     1.1.0
 // @homepage    https://github.com/cvzi/bikemapnet-userscript
 // @author      cuzi
 // @license     MIT

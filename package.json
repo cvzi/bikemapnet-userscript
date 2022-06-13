@@ -1,6 +1,6 @@
 {
     "name": "Bikemap.net Export GPX and KML routes",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "Download GPX, KML and TCX files for a route on bikemap.net",
     "keywords": [
         "userscript",
@@ -36,7 +36,7 @@
     },
     "devDependencies": {
         "@babel/cli": "^7.17.10",
-        "@babel/core": "^7.18.2",
+        "@babel/core": "^7.18.5",
         "@babel/plugin-proposal-class-properties": "^7.17.12",
         "@rollup/plugin-babel": "^5.3.1",
         "@rollup/plugin-commonjs": "^22.0.0",
@@ -44,11 +44,14 @@
         "@rollup/plugin-replace": "^4.0.0",
         "colorette": "^2.0.17",
         "esm": "^3.2.25",
-        "rollup": "^2.75.5",
+        "rollup": "^2.75.6",
         "rollup-plugin-userscript-metablock": "^0.3.1",
         "serve": "^13.0.2"
     },
     "config": {
         "port": "8186"
+    },
+    "dependencies": {
+        "vanilla-picker": "^2.12.1"
     }
 }
