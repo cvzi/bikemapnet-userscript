@@ -9,6 +9,9 @@ General information about userscripts and how to use them can be found at [openu
 If you already have a userscript extension installed, you can **[click to install](https://greasyfork.org/scripts/445713-bikemap-net-export-gpx-and-kml-routes/code/Bikemapnet%20Export%20GPX%20and%20KML%20routes.user.js)** this script.
 
 
+[![Say Thanks!](https://img.shields.io/badge/say-thanks-ff69b4.svg?style=for-the-badge)](https://saythanks.io/to/cvzi)
+
+
 Screenshot:
 ![Screenshot export route](screenshots/exportFormat.png)
 
