@@ -11,7 +11,6 @@
 // @author      cuzi
 // @license     MIT
 // @grant       GM.xmlHttpRequest
-// @grant       GM_setClipboard
 // @grant       GM.registerMenuCommand
 // @grant       GM.setValue
 // @grant       GM.getValue
