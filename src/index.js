@@ -31,8 +31,11 @@ document.head.appendChild(document.createElement('style')).innerHTML = `
   top: 20%;
   left: 20%;
   background: #f7f4fb;
-  min-width: 400px;
+  min-width: 500px;
   min-height: 200px;
+  max-height: 75%;
+  max-width: 75%;
+  overflow: auto;
   z-index: 10;
   border: 2px #a204fb solid;
   box-shadow: #b41aca4d 10px 10px 10px;
@@ -202,16 +205,17 @@ function startDownload (progress) {
   const name = document.querySelector('h1.title').title
   const routeDescriptionDiv = document.querySelector('.route-description')
   const desc = routeDescriptionDiv ? routeDescriptionDiv.textContent.trim() : ''
-
+  const headerImages = Array.from(document.querySelectorAll('#header-carousel .carousel-inner .photo-grid-photo[href]')).map(a => maxImage(a.href))
+  const tags = Array.from(document.querySelectorAll('.route-tags .tag')).map(a => a.textContent.trim())
   const format = document.getElementById('export_format').selectedOptions[0].value.trim().toLowerCase()
   const addElevation = document.getElementById('export_add_elevation').checked
   const lineColor = document.getElementById('kml_line_color').value
   const lineWidth = document.getElementById('kml_line_width').value
 
-  downloadVertices(routeId, format, addElevation, lineColor, lineWidth, name, desc, progress)
+  downloadVertices(routeId, format, addElevation, lineColor, lineWidth, name, desc, headerImages, tags, progress)
 }
 
-function downloadVertices (routeId, format, addElevation, lineColor, lineWidth, name, desc, progress) {
+function downloadVertices (routeId, format, addElevation, lineColor, lineWidth, name, desc, headerImages, tags, progress) {
   console.log('downloadVertices()')
   progress.style.visibility = 'visible'
   progress.value = 1
@@ -231,6 +235,8 @@ function downloadVertices (routeId, format, addElevation, lineColor, lineWidth, 
       routeData.addElevation = !!addElevation
       routeData.lineColor = lineColor
       routeData.lineWidth = lineWidth
+      routeData.headerImages = headerImages
+      routeData.tags = tags
       routeData.pois = []
       downloadPOIs(routeData, progress)
     },
@@ -364,7 +370,7 @@ function toKML (routeData, progress) {
     }
     let description = poiType(poi.poi_class, HL)
     if ('image' in poi && poi.image) {
-      description += '\n\n' + poi.image
+      description += '\n\n' + maxImage(poi.image)
     }
 
     return `<Placemark>
@@ -424,8 +430,9 @@ function toGPX (routeData, progress) {
     let description = type
     let link = ''
     if ('image' in poi && poi.image) {
-      description += '\n\n' + poi.image
-      link = `<link href="${escapeXML(poi.image)}"><text></text></link>`
+      const imageUrl = maxImage(poi.image)
+      description += '\n\n' + imageUrl
+      link = `<link href="${escapeXML(imageUrl)}"><text></text></link>`
     }
     return `
     <wpt lat="${poi.lat}" lon="${poi.lng}">
@@ -478,7 +485,7 @@ function toTCX (routeData, progress) {
     const type = poiType(poi.poi_class, HL)
     let description = name + '\n' + type
     if ('image' in poi && poi.image) {
-      description += '\n\n' + poi.image
+      description += '\n\n' + maxImage(poi.image)
     }
     return `          <CoursePoint>
             <Name>${escapeXML(name).substring(0, 10)}</Name>
@@ -625,7 +632,7 @@ function toGeoJSON (routeData, progress) {
     }
 
     if ('image' in poi && poi.image) {
-      featurePoint.properties.url = poi.image
+      featurePoint.properties.url = maxImage(poi.image)
     }
     return featurePoint
   }))
@@ -643,7 +650,7 @@ function metablock (routeData) {
     maxElevationRepr += ' (at ' + routeData.maxElevationPoint.join(', ') + ')'
   }
 
-  return `
+  let s = `
     Distance: ${distanceFormat(routeData.distance)}
 
     Race cycling time: ${hoursMinutes(routeData.race_cycling_time)}
@@ -656,7 +663,18 @@ function metablock (routeData) {
 
     Min. elevation: ${minElevationRepr}
     Max. elevation: ${maxElevationRepr}
-  `
+`
+  if (routeData.tags) {
+    s += `\n    Tags: ${routeData.tags.join(', ')}\n`
+  }
+  if (routeData.headerImages) {
+    s += '\n    Images:\n'
+  }
+  routeData.headerImages.forEach(function (imageUrl) {
+    s += `    ${imageUrl}\n`
+  })
+
+  return s
 }
 
 function downloadFile (routeData, name, content, mimeType, progress) {
@@ -813,6 +831,14 @@ function getSiteLanguage () {
     return 'de'
   } else {
     return 'en'
+  }
+}
+
+function maxImage (url) {
+  if (url.indexOf('/thumbs/') !== -1 && url.match(/\.\d+x\d+_q\d+\.\w+$/)) {
+    return url.replace('/thumbs/', '/').replace(/\.\d+x\d+_q\d+\.\w+$/, '')
+  } else {
+    return url
   }
 }
 
