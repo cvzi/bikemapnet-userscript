@@ -7,7 +7,6 @@
     ],
     "grant": [
         "GM.xmlHttpRequest",
-        "GM_setClipboard",
         "GM.registerMenuCommand"
     ],
     "connect": [
