@@ -1,6 +1,6 @@
 {
     "name": "Bikemap.net Export GPX and KML routes",
-    "version": "1.2.1",
+    "version": "1.2.2",
     "description": "Download GPX, KML, TCX and geoJSON files for a route on bikemap.net",
     "keywords": [
         "userscript",
