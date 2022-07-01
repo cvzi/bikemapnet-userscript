@@ -35,7 +35,6 @@ document.head.appendChild(document.createElement('style')).innerHTML = `
   min-height: 200px;
   max-height: 75%;
   max-width: 75%;
-  overflow: auto;
   z-index: 10;
   border: 2px #a204fb solid;
   box-shadow: #b41aca4d 10px 10px 10px;
@@ -65,6 +64,13 @@ document.head.appendChild(document.createElement('style')).innerHTML = `
   margin: 3px;
   padding: 2px;
   background: #f4ebff;
+}
+.main-popup-window .metablock {
+  background: white;
+  text-align: left;
+  overflow: scroll;
+  max-width: 700px;
+  max-height: 400px;
 }
 
 `
@@ -689,8 +695,9 @@ function downloadFile (routeData, name, content, mimeType, progress) {
 
   div.appendChild(document.createElement('br'))
 
+  div.appendChild(document.createTextNode('Overview:'))
   const info = div.appendChild(document.createElement('pre'))
-  info.style.textAlign = 'left'
+  info.classList.add('metablock')
   info.innerHTML = metablock(routeData)
 
   addCloseButton(div)
