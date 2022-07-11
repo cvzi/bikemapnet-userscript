@@ -47,7 +47,7 @@
         "esm": "^3.2.25",
         "rollup": "^2.75.7",
         "rollup-plugin-userscript-metablock": "^0.3.1",
-        "serve": "^13.0.2"
+        "serve": "^13.0.4"
     },
     "config": {
         "port": "8186"
