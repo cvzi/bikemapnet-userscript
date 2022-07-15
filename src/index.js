@@ -366,7 +366,7 @@ function exportRoute (routeData, progress) {
 function toKML (routeData, progress) {
   progress.value = PROGRESS_MAX
 
-  const poiXML = routeData.pois.map(poi => {
+  let poiXML = routeData.pois.map(poi => {
     const name = poi.text || (HL === 'en' ? 'Point of Interest' : 'Interessanter Ort')
     let icon = ''
     if ('icon' in poi && poi.icon && 'iconUrl' in poi.icon) {
@@ -388,6 +388,17 @@ function toKML (routeData, progress) {
        </Point>
     </Placemark>`
   }).join('\n    ')
+
+  if (!routeData.pois || routeData.pois.length === 0) {
+    // Ensure that there is at least one other <Placemark> apart from route for maps.me app
+    poiXML += `<Placemark>
+    <name>${escapeXML(routeData.routeName)} End</name>
+      <description>End of route '${escapeXML(routeData.routeName)}'</description>
+      <Point>
+        <coordinates>${routeData.vertices[routeData.vertices.length - 1].slice().reverse().join(',')}</coordinates>
+      </Point>
+    </Placemark>`
+  }
 
   const coordinates = routeData.vertices.map(p => p.reverse().join(',')).join('\n')
   const temp = `<?xml version="1.0" encoding="UTF-8"?>
