@@ -390,9 +390,18 @@ function toKML (routeData, progress) {
   }).join('\n    ')
 
   if (!routeData.pois || routeData.pois.length === 0) {
-    // Ensure that there is at least one other <Placemark> apart from route for maps.me app
+    // Ensure that there is at least one other <Placemark>
     poiXML += `<Placemark>
-    <name>${escapeXML(routeData.routeName)} End</name>
+      <name>${escapeXML(routeData.routeName)} Start</name>
+      <styleUrl>#placemark-bluegray</styleUrl>
+      <description>Beginning of route '${escapeXML(routeData.routeName)}'</description>
+      <Point>
+        <coordinates>${routeData.vertices[0].slice().reverse().join(',')}</coordinates>
+      </Point>
+    </Placemark>
+    <Placemark>
+      <name>${escapeXML(routeData.routeName)} Destination</name>
+      <styleUrl>#placemark-green</styleUrl>
       <description>End of route '${escapeXML(routeData.routeName)}'</description>
       <Point>
         <coordinates>${routeData.vertices[routeData.vertices.length - 1].slice().reverse().join(',')}</coordinates>
@@ -400,6 +409,10 @@ function toKML (routeData, progress) {
     </Placemark>`
   }
 
+  let altitudeMode = ''
+  if (routeData.vertices[0].length > 2) {
+    altitudeMode = '\n        <altitudeMode>absolute</altitudeMode>'
+  }
   const coordinates = routeData.vertices.map(p => p.reverse().join(',')).join('\n')
   const temp = `<?xml version="1.0" encoding="UTF-8"?>
 <kml xmlns="http://www.opengis.net/kml/2.2">
@@ -418,14 +431,33 @@ ${escapeXML(metablock(routeData))}
         <color>7f00ff00</color>
       </PolyStyle>
     </Style>
+    <Style id="placemark-bluegray">
+      <IconStyle>
+        <color>ffd08050</color>
+        <Icon>
+          <href>https://omaps.app/placemarks/placemark-bluegray.png</href>
+        </Icon>
+      </IconStyle>
+      <LabelStyle>
+        <color>ffd08050</color>
+      </LabelStyle>
+    </Style>
+    <Style id="placemark-green">
+      <IconStyle>
+        <color>ff00ff00</color>
+        <Icon>
+          <href>https://omaps.app/placemarks/placemark-green.png</href>
+        </Icon>
+      </IconStyle>
+      <LabelStyle>
+        <color>ff00ff00</color>
+      </LabelStyle>
+    </Style>
     <Placemark>
       <name>${escapeXML(routeData.routeName)}</name>
       <description>${escapeXML(routeData.routeDesc)}</description>
       <styleUrl>#myStyle</styleUrl>
-      <LineString>
-        <extrude>1</extrude>
-        <tessellate>1</tessellate>
-        <altitudeMode>absolute</altitudeMode>
+      <LineString>${altitudeMode}
         <coordinates>${coordinates}
         </coordinates>
       </LineString>
