@@ -2105,4 +2105,3 @@ ${coursePoints}
   }
 
 })();
-//# sourceMappingURL=bundle.user.js.map

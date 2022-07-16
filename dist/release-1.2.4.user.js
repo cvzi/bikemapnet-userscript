@@ -5,7 +5,7 @@
 // @icon        https://static.bikemap.net/favicons/apple-touch-icon.png
 // @match       https://www.bikemap.net/*
 // @connect     maptoolkit.net
-// @version     1.2.5
+// @version     1.2.4
 // @homepage    https://github.com/cvzi/bikemapnet-userscript
 // @author      cuzi
 // @license     MIT
@@ -2105,4 +2105,3 @@ ${coursePoints}
   }
 
 })();
-//# sourceMappingURL=bundle.user.js.map
