@@ -13,7 +13,7 @@ If you already have a userscript extension installed, you can **[click to instal
 
 
 Screenshot:
-![Screenshot export route](screenshots/exportFormat.png)
+![Screenshot export route](screenshots/simple.png)
 
 ## Development
 
