@@ -6,7 +6,7 @@
 // @match       https://www.bikemap.net/*
 // @match       https://web.bikemap.net/*
 // @connect     www.bikemap.net
-// @version     1.3.2
+// @version     1.3.3
 // @homepage    https://github.com/cvzi/bikemapnet-userscript
 // @author      cuzi
 // @license     MIT
@@ -99,7 +99,7 @@ SOFTWARE.
     const routeId = parseInt(document.location.href.match(/\/r\/(\d+)/)[1])
     GM.xmlHttpRequest({
       method: 'GET',
-      url: `https://www.bikemap.net/api/v5/routes/${routeId}/`,
+      url: `https://www.bikemap.net/api/v6/routes/${routeId}/`,
       headers: {
         'x-requested-with': 'XMLHttpRequest'
       },
